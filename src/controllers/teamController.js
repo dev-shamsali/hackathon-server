@@ -45,6 +45,42 @@ export const getTeam = async (req, res) => {
   }
 };
 
+export const updateTeam = async (req, res) => {
+  try {
+    const { teamName, leaderName, email, members, institute, projectTitle, problemStatement, techStack, prdUrl, trdUrl } = req.body;
+
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ message: 'Team not found' });
+
+    if (teamName && teamName !== team.teamName) {
+      const dup = await Team.findOne({ teamName, _id: { $ne: team._id } });
+      if (dup) return res.status(400).json({ message: 'Team name already taken' });
+    }
+    if (email && email !== team.email) {
+      const dup = await Team.findOne({ email, _id: { $ne: team._id } });
+      if (dup) return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    if (teamName !== undefined) team.teamName = teamName;
+    if (leaderName !== undefined) team.leaderName = leaderName;
+    if (email !== undefined) team.email = email;
+    if (institute !== undefined) team.institute = institute;
+    if (projectTitle !== undefined) team.projectTitle = projectTitle;
+    if (problemStatement !== undefined) team.problemStatement = problemStatement;
+    if (techStack !== undefined) team.techStack = techStack;
+    if (prdUrl !== undefined) team.prdUrl = prdUrl;
+    if (trdUrl !== undefined) team.trdUrl = trdUrl;
+    if (members !== undefined) {
+      team.members = typeof members === 'string' ? members.split(',').map(m => m.trim()).filter(Boolean) : members;
+    }
+
+    await team.save();
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const deleteTeam = async (req, res) => {
   try {
     await Team.findByIdAndDelete(req.params.id);
