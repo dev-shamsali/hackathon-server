@@ -15,12 +15,12 @@ const teamSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-teamSchema.pre('save', async function (next) {
+teamSchema.pre('save', async function () {
   if (!this.teamId) {
     const count = await mongoose.model('Team').countDocuments();
     this.teamId = `TEAM-${String(count + 1).padStart(3, '0')}`;
   }
-  next();
+
 });
 
 export default mongoose.model('Team', teamSchema);
