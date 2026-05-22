@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { connectDB } from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
@@ -22,11 +23,9 @@ app.set('trust proxy', 1);
 
 connectDB();
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-  message: 'Too many requests from this IP'
-});
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -37,9 +36,28 @@ app.use(cors({
   origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
   credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/api/', limiter);
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  message: { message: 'Too many requests, please try again later.' },
+  standardHeaders: 'draft-8',
+  legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  message: { message: 'Too many login attempts, please try again later.' },
+  standardHeaders: 'draft-8',
+  legacyHeaders: false
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/', authLimiter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', authRoutes);
@@ -52,4 +70,4 @@ app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Dat
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`));
