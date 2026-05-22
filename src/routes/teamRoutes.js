@@ -1,11 +1,10 @@
 import express from 'express';
 import { registerTeam, getTeams, getTeam, updateTeam, deleteTeam } from '../controllers/teamController.js';
 import { protect, adminOnly } from '../middleware/auth.js';
-import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
 
-router.post('/register', upload.fields([{ name: 'prd', maxCount: 1 }, { name: 'trd', maxCount: 1 }]), registerTeam);
+router.post('/register', registerTeam);
 router.get('/', protect, getTeams);
 router.get('/:id', protect, getTeam);
 router.put('/:id', protect, adminOnly, updateTeam);

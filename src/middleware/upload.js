@@ -25,3 +25,10 @@ const fileFilter = (req, file, cb) => {
 };
 
 export const upload = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } });
+
+export const runUpload = (req, res) => new Promise((resolve, reject) => {
+  upload.fields([{ name: 'prd', maxCount: 1 }, { name: 'trd', maxCount: 1 }])(req, res, (err) => {
+    if (err) reject(err);
+    else resolve();
+  });
+});
