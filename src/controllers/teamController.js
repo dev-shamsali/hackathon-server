@@ -1,6 +1,17 @@
+import multer from 'multer';
 import Team from '../models/Team.js';
+import { runUpload } from '../middleware/upload.js';
 
 export const registerTeam = async (req, res) => {
+  try {
+    await runUpload(req, res);
+  } catch (err) {
+    if (err instanceof multer.MulterError || err.message?.includes('Only PDF')) {
+      return res.status(400).json({ message: err.message });
+    }
+    return res.status(500).json({ message: 'File upload failed' });
+  }
+
   try {
     const { teamName, leaderName, email, members, institute, projectTitle, problemStatement, techStack } = req.body;
 
@@ -10,11 +21,14 @@ export const registerTeam = async (req, res) => {
       return res.status(400).json({ message: `${field} already registered` });
     }
 
+    const prdUrl = req.files?.prd?.[0] ? `/uploads/${req.files.prd[0].filename}` : '';
+    const trdUrl = req.files?.trd?.[0] ? `/uploads/${req.files.trd[0].filename}` : '';
+
     const membersArr = typeof members === 'string' ? members.split(',').map(m => m.trim()).filter(Boolean) : members || [];
 
     const team = await Team.create({
       teamName, leaderName, email, members: membersArr,
-      institute, projectTitle, problemStatement, techStack
+      institute, projectTitle, problemStatement, techStack, prdUrl, trdUrl
     });
 
     res.status(201).json({
