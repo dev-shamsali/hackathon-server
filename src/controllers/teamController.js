@@ -22,7 +22,8 @@ export const registerTeam = async (req, res) => {
       team: { id: team._id, teamId: team.teamId, teamName: team.teamName }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.log(err);
+    return res.status(500).json({ message: err.message });
   }
 };
 
