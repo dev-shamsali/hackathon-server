@@ -16,7 +16,7 @@ const scoreSchema = new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 });
 
-scoreSchema.pre('save', function (next) {
+scoreSchema.pre('save', function () {
   this.totalScore =
     this.problemSolving +
     this.technicalImplementation +
@@ -25,7 +25,6 @@ scoreSchema.pre('save', function (next) {
     this.presentation +
     this.scalability +
     this.documentation;
-  next();
 });
 
 export default mongoose.model('Score', scoreSchema);

@@ -10,10 +10,9 @@ const judgeSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-judgeSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+judgeSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
 judgeSchema.methods.matchPassword = async function (enteredPassword) {
