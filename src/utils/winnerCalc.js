@@ -2,6 +2,7 @@ export const calculateWinners = (scores) => {
   const teamMap = {};
 
   scores.forEach((score) => {
+    if (!score.teamId) return;
     const id = score.teamId._id?.toString() || score.teamId.toString();
     if (!teamMap[id]) {
       teamMap[id] = {
